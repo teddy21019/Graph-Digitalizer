@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graph Digitizer Tool</title>
+  <script src="script.js" async></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Graph Digitizer Tool</h1>
+
+<div id="toolbar">
+  <label>
+    Upload Image: <input type="file" id="upload-image" accept="image/*">
+  </label>
+  <button id="set-origin">Set Origin</button>
+  <button id="set-scale">Set Scale</button>
+  <label>
+    Label: <input type="text" id="data-label" placeholder="Enter label">
+  </label>
+  <button id="add-point">Add Data Points</button>
+  <button id="delete-point">Delete Points</button>
+  <button id="export-data">Export Data</button>
+  <button id="grid-toggle">Toggle Grid</button>
+</div>
+
+<div id="scale-inputs" class="hidden">
+  <label>
+    Enter X-Axis Value: <input type="number" id="x-axis-value">
+  </label>
+  <button id="confirm-x-axis">Confirm X-Axis</button>
+  <label>
+    Enter Y-Axis Value: <input type="number" id="y-axis-value">
+  </label>
+  <button id="confirm-y-axis">Confirm Y-Axis</button>
+</div>
+
+<div id="canvas-container">
+  <canvas id="digitizer-canvas" width="800" height="600"></canvas>
+</div>
+
+
+</body>
+</html>

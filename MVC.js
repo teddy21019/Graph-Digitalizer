@@ -21,8 +21,11 @@ class DigitalizerModel {
     /**
      * @type {Object<string, DataPointComponent[]>}
      */
-    this.dataPoints = {};
+    this._dataPoints = {};
     this.colors = ["blue", "green", "orange", "purple", "brown", "pink", "cyan", "magenta"];
+
+    /** @type {number[][]} */
+    this.transformationMatrix = [[1,0], [0,1]]
   }
 
   /**
@@ -30,36 +33,149 @@ class DigitalizerModel {
    * @param {Vector2} pos
    */
   updateOrigin(pos) {
-    this.components['origin'].update(pos)
-    this.components['origin'].setVisible(true)
+    this._components['origin'].update(pos)
+    this._components['origin'].setVisible(true)
   }
 
+  /**
+   * @param {{ x: any; y: any; }} param
+   */
   updateScale(param) {
     return
   }
 
+  /**
+   * @param {HTMLImageElement} image
+   */
   updateImage(image) {
-    const imageComponent = this.components['image'];
+    const imageComponent = this._components['image'];
     if (imageComponent) {
       imageComponent.update({ image });
       imageComponent.setVisible(true)
     }
   }
-  // Add a data point to the model
-  addDataPoint(x, y, label) {
-    if(!this.dataPoints[label]){
+
+  setImageTransform({ zoom=null, angle=null}={}){
+    let ic = this.components['image']
+    if(zoom){
+      ic.update({'zoom':zoom})
+    }
+    if(angle){
+      ic.update({"angle": angle})
+    }
+  }
+
+  /**
+   * Add a data point to the model
+   * @param {Vector2} pos
+   * @param {string} label Label for datapoint
+   */
+  addDataPoint(pos, label) {
+    if (!this.dataPoints[label]) {
       this.dataPoints[label] = []
     }
     const label_key = Object.keys(this.dataPoints).findIndex(v => v == label)
     const color = this.colors[label_key]
-    this.dataPoints[label].push(new DataPointComponent(label, new Vector2(x, y), color))
+    this.dataPoints[label].push(new DataPointComponent(label, pos, color))
     // update points render
     // this.updateComponent("points", { data: this.dataPoints });
   }
 
+  /**
+   *
+   * @param {string} label Current label to detect and delete
+   * @param {Vector2} pos Cursor Position
+   * @param {number} threshold Threshold for point detection (eraser radius)
+   */
+  deletePoint(label, pos, threshold) {
+        let pointIndex = -1;
+
+        this.dataPoints[label].forEach((point, index) => {
+        if (Math.abs(pos.x - point.pos.x) < threshold && Math.abs(pos.y - point.pos.y) < threshold) {
+            pointIndex = index; // delete one only
+        }
+        });
+
+        if (pointIndex !== -1) {
+          this.dataPoints[label].splice(pointIndex, 1);
+      }
+    }
+
   // Get the list of components
-  getComponents() {
-    return this.components;
+  get components() {
+    return this._components;
+  }
+
+  get dataPoints(){
+    return this._dataPoints
+  }
+  /**
+   *
+   * @param {Vector2} pos Vector2 object to be transformed
+   * @returns
+   */
+  pointScale(pos) {
+    // perform matrix transformation
+      return
+  }
+
+  /**
+   * @param {Vector2} P
+   */
+  _projection2Real(P) {
+    // Step 1: Compute differences and initial matrices
+    const x = x1.subtract(x0);
+    const y = y1.subtract(y0);
+    const v = x0.subtract(y0);
+    const zero = new Vector2(0,0)
+
+    const M1 = Matrix.columnStack(zero, y);
+    const M2 = Matrix.inverse(Matrix.columnStack(x, zero.subtract(y)));
+
+    // Step 2: Calculate Q1
+    const Q1 = M2.multiply(M1.multiply(v)).add(x0);
+
+    // Step 3: Compute rx, ry and redefine matrices
+    const rx = new Vector2(rx1 - rx0, 0);
+    const ry = new Vector2(0, ry1 - ry0);
+
+    const M1_new = Matrix.columnStack(rx, ry);
+    const M2_new = Matrix.inverse(Matrix.columnStack(x, y));
+
+    // Step 4: Calculate rP
+    const rP = M2_new.multiply(M1_new.multiply(P.subtract(Q1))).add(new Vector2(rx0, ry0));
+
+    return P;   // TODO, for now
+    return rP;
+  }
+  /**
+   *
+   * @param {DataPointComponent} dpComp
+   * @returns {string}
+   */
+  _transformDataPointFromComponent(dpComp){
+    const label = dpComp.label
+    const pos = dpComp.pos
+    let tP = this._projection2Real(pos)
+    return `${tP.x}, ${tP.y}, ${label}`
+  }
+
+  exportData() {
+
+    let datapointContents = Object.keys(this.dataPoints).map(dpKey => {
+      let dpComps = this.dataPoints[dpKey]
+      return dpComps.map(el => this._transformDataPointFromComponent(el)).join("\n")
+    });
+
+    // for each point: do linear transform
+    /**
+     *
+     * [ ex ey ]^{-1} % (P\tilde + (O - O\tilde) )
+     */
+    // TODO:    Add transformation in component or model?
+
+    let csvContent = "x, y, label \n" + datapointContents.join("\n")
+    return csvContent
   }
 }
 

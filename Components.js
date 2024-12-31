@@ -105,11 +105,18 @@ class ImageComponent extends Component {
         super()
         this.visible = false
         this.image = image
+        this.angle = 0
     }
 
     update(data) {
         if (data.image) {
             this.image = data.image;
+        }
+        if (data.angle != undefined){
+            this.angle = data.angle
+        }
+        if (data.zoom != undefined){
+            this.zoom = data.zoom
         }
     }
 
@@ -121,7 +128,7 @@ class ImageComponent extends Component {
         if (this.image) {
             let width_ratio = ctx.canvas.width / this.image.width
             let height_ratio = ctx.canvas.height / this.image.height
-            let scale_factor  = Math.min(width_ratio, height_ratio);
+            let scale_factor  = Math.min(width_ratio, height_ratio) * this.zoom;
 
             // let image_translation = new Vector2(0,0)
 
@@ -134,7 +141,7 @@ class ImageComponent extends Component {
 
             // rotation
             ctx.translate(ctx.canvas.width/2, ctx.canvas.height/2)
-            ctx.rotate(45 * Math.PI / 180)
+            ctx.rotate(this.angle * Math.PI / 180)
             ctx.scale(scale_factor, scale_factor);
             ctx.drawImage(this.image, -this.image.width / 2, - this.image.height / 2);
             ctx.scale(1/scale_factor, 1/scale_factor)

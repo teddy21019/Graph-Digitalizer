@@ -43,11 +43,27 @@ document.getElementById('upload-image').addEventListener('change', (event)=>{
     if (file) {
         controller.handleImageUpload(file);
     }
+});
+
 document.getElementById('grid-toggle').addEventListener('click', ()=>{
     controller.toggleGrid()
 });
+
+document.getElementById('export-data').addEventListener('click', exportData);
+
+document.getElementById('delete-point').addEventListener('click', () => {
+    controller.setMode('delete')
 });
 
+document.getElementById('rotation-slider').addEventListener('input', (event)=>{
+    const angle = event.target.value
+    controller.handleImageRotate(angle)
+})
+
+document.getElementById('zoom-slider').addEventListener('input', (event)=>{
+    const zoom = event.target.value / (event.target.max / 10)
+    controller.handleImageZoom(zoom)
+})
 // Initial rendering
 view.updateDraw();
 
@@ -56,7 +72,6 @@ view.updateDraw();
 // document.getElementById('set-origin').addEventListener('click', () => setMode('origin'));
 // document.getElementById('set-scale').addEventListener('click', () => setMode('scale'));
 // document.getElementById('add-point').addEventListener('click', () => setMode('points'));
-// document.getElementById('export-data').addEventListener('click', exportData);
 // document.getElementById('confirm-x-axis').addEventListener('click', confirmXAxis);
 // document.getElementById('confirm-y-axis').addEventListener('click', confirmYAxis);
 // document.getElementById('delete-point').addEventListener('click', () => {
@@ -224,12 +239,11 @@ view.updateDraw();
 // drawCanvas();
 // }
 
-// function exportData() {
-// const csvContent = "x,y,label\n" +
-//     dataPoints.map(p => `${p.x},${p.y},${p.label}`).join("\n");
-// const blob = new Blob([csvContent], { type: 'text/csv' });
-// const link = document.createElement('a');
-// link.href = URL.createObjectURL(blob);
-// link.download = 'data_points.csv';
-// link.click();
-// }
+function exportData() {
+    const csvContent = model.exportData()
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'data_points.csv';
+    link.click();
+}

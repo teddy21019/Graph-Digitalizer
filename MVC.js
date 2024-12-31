@@ -151,7 +151,20 @@ class DigitizerController {
       console.error(`Mode ${mode} is not supported.`);
     }
   }
+
+
+  /**
+   * @param {any} x
+   * @param {any} y
+   */
   handleDeleteMode(x, y) {
+    const threshold = 5; // Pixel threshold for detecting clicks near points
+
+    // get current label. This is to avoid deleting other points within the same range
+    const label = this.view.getCurrentLabel()
+
+    this.model.deletePoint(label, new Vector2(x, y), threshold)
+
     return
   }
 

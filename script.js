@@ -28,16 +28,32 @@ canvas.addEventListener("click", (event) => {
     controller.handleCanvasClick(x, y);
 });
 
-// Example button listeners (optional)
-document.getElementById("set-origin").addEventListener("click", () => {
-    controller.setMode("origin");
-    bubble.alert("Click on the canvas to set the origin.");
-});
+canvas.addEventListener('mousemove', (event)=>{
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    controller.handleCanvasMove(x, y);
+})
+
 
 document.getElementById("add-point").addEventListener("click", () => {
-    controller.setMode("points");
+    controller.setMode(MODELIST.addPoint);
    bubble.alert("Click on the canvas to add a data point.");
 });
+
+document.getElementById('delete-point').addEventListener('click', () => {
+    controller.setMode(MODELIST.deletePoint)
+});
+
+document.getElementById('set-x-axis').addEventListener('click', () => {
+    controller.setMode(MODELIST.setAxisX)
+});
+
+document.getElementById('set-y-axis').addEventListener('click', () => {
+    controller.setMode(MODELIST.setAxisY)
+});
+
 document.getElementById('upload-image').addEventListener('change', (event)=>{
     const file = event.target.files[0];
     if (file) {
@@ -51,9 +67,6 @@ document.getElementById('grid-toggle').addEventListener('click', ()=>{
 
 document.getElementById('export-data').addEventListener('click', exportData);
 
-document.getElementById('delete-point').addEventListener('click', () => {
-    controller.setMode('delete')
-});
 
 document.getElementById('rotation-slider').addEventListener('input', (event)=>{
     const angle = event.target.value
@@ -64,6 +77,21 @@ document.getElementById('zoom-slider').addEventListener('input', (event)=>{
     const zoom = event.target.value / (event.target.max / 10)
     controller.handleImageZoom(zoom)
 })
+
+const axisMappings = [
+    { axis: 'x', isEnd: 0, elementId: 'x-axis-value-1' },
+    { axis: 'x', isEnd: 1, elementId: 'x-axis-value-2' },
+    { axis: 'y', isEnd: 0, elementId: 'y-axis-value-1' },
+    { axis: 'y', isEnd: 1, elementId: 'y-axis-value-2' },
+  ];
+
+  axisMappings.forEach(({ axis, isEnd, elementId }) => {
+    document.getElementById(elementId).addEventListener('input', (event) => {
+      const value = parseFloat(event.target.value);
+      controller.updateRealAxis(axis, isEnd, value);
+    });
+  });
+
 // Initial rendering
 view.updateDraw();
 

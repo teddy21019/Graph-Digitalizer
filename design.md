@@ -13,3 +13,6 @@
     - rotation and skewness correction can be done once axis is generated
 
 - Make each datapoint a component as well
+
+
+[oop a0a227b] Ready for change Mode structure

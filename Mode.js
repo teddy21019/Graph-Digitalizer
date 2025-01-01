@@ -13,7 +13,7 @@ class Mode {
      *
      * @param {Vector2} pos position vector
      */
-    onMouseDown(pos) {
+    onMouseClick(pos) {
         return
     }
     /**
@@ -23,20 +23,7 @@ class Mode {
     onMouseMove(pos) {
         return
     }
-    /**
-     *
-     * @param {Vector2} pos position vector
-     */
-    onMouseUp(pos) {
-        return
-    }
-    /**
-     *
-     * @param {Vector2} pos position vector
-     */
-    onRightClick(pos) {
-        return
-    }
+
 }
 
 
@@ -49,24 +36,41 @@ class AxisMode extends Mode {
      */
     constructor(model, view, axis) {
         super(model, view)
-        this.state = {
+        this.stateList = {
             READY: "ready",             // ready to click starting point P1
             SEEKING: "seeking",         // arrow from P1 to
             FINISHED: "finished",
         }
 
-        if (axis !== 'x' | axis !== 'y') {
+        if (axis !== 'x' & axis !== 'y') {
             throw new Error("Undefined axis")
         }
+
         this.axis = axis
+        /** @type {AxisComponent} */
+        this.axisComponent = this.model.components[axis+"Axis"] //xAxis or yAxis
+        this.state = this.stateList.READY
     }
 
     /**
      *
      * @param {Vector2} pos
      */
-    onMouseDown(pos) {
-
+    onMouseClick(pos) {
+        // set axis starting point
+        switch (this.state){
+            case this.stateList.READY:
+                this.axisComponent.setStartPos(pos)
+                this.state = this.stateList.SEEKING
+                break
+            case this.stateList.SEEKING:
+                this.axisComponent.setEndPos(pos)
+                this.state = this.stateList.FINISHED
+                break
+            case this.stateList.FINISHED:
+                this.state = this.stateList.READY
+        }
+        this.view.updateDraw()
     }
 
     /**
@@ -74,14 +78,9 @@ class AxisMode extends Mode {
      * @param {Vector2} pos
      */
     onMouseMove(pos) {
+        if (this.state !== this.stateList.SEEKING) return
 
-    }
-
-    /**
-     *
-     * @param {Vector2} pos
-     */
-    onMouseUp() {
+        this.axisComponent.setEndPos(pos)
 
     }
 
@@ -96,14 +95,14 @@ class AddPointMode extends Mode {
      *
      * @param {Vector2} pos
      */
-    onMouseDown(pos) {
+    onMouseClick(pos) {
         const label = this.view.getCurrentLabel();
         if (!label) {
             alert("Please set label before adding points")
             throw new Error("Label required")
         }
         this.model.addDataPoint(label, pos);
-        console.log(`Adding ${label} at (${x}, ${y})`);
+        console.log(`Adding ${label} at (${pos.x}, ${pos.y})`);
     }
 }
 
@@ -116,7 +115,7 @@ class DeletePointMode extends Mode {
      *
      * @param {Vector2} pos
      */
-    onMouseDown(pos) {
+    onMouseClick(pos) {
         const threshold = 5; // Pixel threshold for detecting clicks near points
 
         // get current label. This is to avoid deleting other points within the same range

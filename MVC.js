@@ -1,5 +1,12 @@
 //@ts-check
 
+const MODELIST = {
+      addPoint: 'addpoint',
+      deletePoint: 'deletepoint',
+      setAxisX: 'setaxisx',
+      setAxisY: 'setaxisy',
+}
+
 // Model
 class DigitalizerModel {
   constructor() {
@@ -11,7 +18,9 @@ class DigitalizerModel {
     this._components = {
       "image": new ImageComponent(null),
       "origin": new OriginComponent(new Vector2(0, 0)),
-      "grid": new GridComponent(),
+      "grid": new GridComponent(20),
+      'xAxis': new AxisComponent('x', null, null),
+      'yAxis': new AxisComponent('y', null, null),
     }
 
     // Default components
@@ -24,8 +33,11 @@ class DigitalizerModel {
     this._dataPoints = {};
     this.colors = ["blue", "green", "orange", "purple", "brown", "pink", "cyan", "magenta"];
 
-    /** @type {number[][]} */
-    this.transformationMatrix = [[1,0], [0,1]]
+    this.rX0 = new Vector2(0,0)
+    this.rX1 = new Vector2(1,0)
+    this.rY0 = new Vector2(0,0)
+    this.rY1 = new Vector2(0,1)
+
   }
 
   /**
@@ -38,10 +50,20 @@ class DigitalizerModel {
   }
 
   /**
-   * @param {{ x: any; y: any; }} param
+   *
+   * @param {string} axis x or y
+   * @param {boolean}isEnd 0 if start, 1 if end
+   * @param {number} value value to set
+   * @returns
    */
-  updateScale(param) {
-    return
+  updateRealAxis(axis, isEnd, value ) {
+    const axisMapping = {
+      x: { start: this.rX0, end: this.rX1 },
+      y: { start: this.rY0, end: this.rY1 },
+    };
+
+    const target = axisMapping[axis][isEnd ? 'end' : 'start'];
+    target[axis] = value;
   }
 
   /**
@@ -109,21 +131,26 @@ class DigitalizerModel {
   get dataPoints(){
     return this._dataPoints
   }
-  /**
-   *
-   * @param {Vector2} pos Vector2 object to be transformed
-   * @returns
-   */
-  pointScale(pos) {
-    // perform matrix transformation
-      return
-  }
 
   /**
    * @param {Vector2} P
    */
   _projection2Real(P) {
     // Step 1: Compute differences and initial matrices
+
+    /** @type {AxisComponent} */
+    const xAxisComponent = this.components.xAxis
+    const {startPos: x0, endPos:x1} =  xAxisComponent
+
+    /** @type {AxisComponent} */
+    const yAxisComponent = this.components.yAxis
+    const {startPos: y0, endPos:y1} =  yAxisComponent
+
+    const rx0 = this.rX0.x
+    const rx1 = this.rX1.x
+    const ry0 = this.rY0.y
+    const ry1 = this.rY1.y
+
     const x = x1.subtract(x0);
     const y = y1.subtract(y0);
     const v = x0.subtract(y0);
@@ -133,7 +160,8 @@ class DigitalizerModel {
     const M2 = Matrix.inverse(Matrix.columnStack(x, zero.subtract(y)));
 
     // Step 2: Calculate Q1
-    const Q1 = M2.multiply(M1.multiply(v)).add(x0);
+    // M1 @ M2 @ v + X0
+    const Q1 = M1.multiply(M2.multiply(v)).add(x0);
 
     // Step 3: Compute rx, ry and redefine matrices
     const rx = new Vector2(rx1 - rx0, 0);
@@ -143,9 +171,9 @@ class DigitalizerModel {
     const M2_new = Matrix.inverse(Matrix.columnStack(x, y));
 
     // Step 4: Calculate rP
-    const rP = M2_new.multiply(M1_new.multiply(P.subtract(Q1))).add(new Vector2(rx0, ry0));
+    // M1 @ M2 @ Q1 + Q0
+    const rP = M1_new.multiply(M2_new.multiply(P.subtract(Q1))).add(new Vector2(rx0, ry0));
 
-    return P;   // TODO, for now
     return rP;
   }
   /**
@@ -248,61 +276,59 @@ class DigitizerController {
   constructor(model, view) {
     this.model = model;
     this.view = view;
-    this.currentMode = null;
-
-    /**
-     * @type {Object<string, ModeCallBack>}
-     */
-    this.modeHandlers = {
-      delete: this.handleDeleteMode.bind(this),
-      origin: this.setOrigin.bind(this),
-      scale: this.setScalePoint.bind(this),
-      points: this.addPoint.bind(this),
-    };
+    this.currentMode = MODELIST.addPoint
+    this._init()
   }
+
+  _init(){
+
+    // mode list as enum object to avoid typing error
+    /**
+     * @type {Object<string, Mode>}
+     */
+    this.modes = {
+      [MODELIST.addPoint]: new AddPointMode(this.model, this.view),
+      [MODELIST.deletePoint]: new DeletePointMode(this.model, this.view),
+      [MODELIST.setAxisX]: new AxisMode(this.model, this.view, 'x'),
+      [MODELIST.setAxisY]: new AxisMode(this.model, this.view, 'y'),
+    };
+
+    this._modeTransition = {
+      // mode               event name    'next mode'
+      [MODELIST.setAxisX] : {'finish': MODELIST.setAxisY}
+
+  }
+}
 
   /**
    *  Sets current mode for controller. Called by listening events.
    * @param {string} mode Mode to set
    */
   setMode(mode) {
-    if (this.modeHandlers[mode]) {
+    if (this.modes[mode]) {
       this.currentMode = mode;
     } else {
       console.error(`Mode ${mode} is not supported.`);
     }
   }
 
-
   /**
-   * @param {any} x
-   * @param {any} y
-   */
-  handleDeleteMode(x, y) {
-    const threshold = 5; // Pixel threshold for detecting clicks near points
-
-    // get current label. This is to avoid deleting other points within the same range
-    const label = this.view.getCurrentLabel()
-
-    this.model.deletePoint(label, new Vector2(x, y), threshold)
-
-    return
-  }
-
-
-  /**
-   * Called when click on canvas. Action depends on current mode, which corresponds to respective callback in class
+   * Called when click on canvas. Action depends on current mode, which corresponds to respective mode class
    * @param {number} x x coord of canvas
    * @param {number} y y coord of canvas
    */
   handleCanvasClick(x, y) {
+    this.modes[this.currentMode].onMouseClick(new Vector2(x, y))
+    this.view.updateDraw()
+  }
 
-    // call handler based on mode
-    if (this.currentMode && this.modeHandlers[this.currentMode]) {
-      this.modeHandlers[this.currentMode](x, y);
-    } else {
-      console.error(`No handler defined for mode: ${this.currentMode}`);
-    }
+  /**
+   * Called when move on canvas. Action depends on current mode, which corresponds to respective mode class
+   * @param {number} x x coord of canvas
+   * @param {number} y y coord of canvas
+   */
+  handleCanvasMove(x,y){
+    this.modes[this.currentMode].onMouseMove(new Vector2(x, y))
     this.view.updateDraw()
   }
 
@@ -340,37 +366,6 @@ class DigitizerController {
     this.model.setImageTransform({zoom})
     this.view.updateDraw()
   }
-  /**
-   * @param {any} x
-   * @param {any} y
-   */
-  addPoint(x, y) {
-    const label = this.view.getCurrentLabel();
-    if (!label) {
-      alert("Please set label before adding points")
-      throw new Error("Label required")
-    }
-    this.model.addDataPoint(label, new Vector2(x, y));
-    console.log(`Adding ${label} at (${x}, ${y})`);
-  }
-
-  /**
-   * @param {any} x
-   * @param {any} y
-   */
-  setOrigin(x, y) {
-    console.log(`Setting origin at (${x}, ${y})`);
-    this.model.updateOrigin(new Vector2(x, y));
-  }
-
-  /**
-   * @param {any} x
-   * @param {any} y
-   */
-  setScalePoint(x, y) {
-    console.log(`Setting scale point at (${x}, ${y})`);
-    this.model.updateScale({ x, y });
-  }
 
   toggleGrid() {
     /**
@@ -380,6 +375,10 @@ class DigitizerController {
     let visibility = grid_comp.visible
     grid_comp.setVisible(!visibility)
     this.view.updateDraw()
+  }
+
+  updateRealAxis(axis, isEnd, value){
+    this.model.updateRealAxis(axis, isEnd, value)
   }
 }
 

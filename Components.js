@@ -157,35 +157,61 @@ class AxisComponent extends Component {
      * @param {string} axis_type Type of axis. Either x or y
      * @param {Vector2} start_pos Start position of axis assignment
      * @param {Vector2} end_pos End position of axis assignment
-     * @param {number} tick
      */
-    constructor(axis_type, start_pos, end_pos, tick) {
+    constructor(axis_type, start_pos, end_pos) {
         super()
-        if (axis_type != "x" | axis_type != "y"){
+        if (axis_type != "x" & axis_type != "y"){
             throw new Error("Must be either x or y axis")
         }
+        this.visible = false
         this.axis_type = axis_type
-        this.start_pos = start_pos
-        this.end_pos = end_pos
-        this.tick = tick
+        this.startPos = start_pos
+        this.endPos = end_pos
+    }
+    /**
+     *
+     * @param {Vector2} pos
+     */
+    setStartPos(pos){
+        this.startPos = pos
+        this.setVisible(true)
+    }
+
+    /**
+     *
+     * @param {Vector2} pos
+     */
+    setEndPos(pos){
+        this.endPos = pos
+    }
+    drawArrow(ctx, fromPos, toPos) {
+        if (!fromPos | !toPos) return
+        const {x: fromX, y: fromY} = fromPos
+        const {x: toX, y: toY} = toPos
+        const headLength = 10;
+        const angle = Math.atan2(toY - fromY, toX - fromX);
+
+        // Draw the line
+        ctx.save()
+        ctx.beginPath();
+        ctx.moveTo(fromX, fromY);
+        ctx.lineTo(toX, toY);
+        ctx.lineWidth = 4
+        ctx.stroke();
+
+        // Draw the arrowhead
+        ctx.beginPath();
+        ctx.moveTo(toX, toY);
+        ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+        ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
+        ctx.lineTo(toX, toY);
+        ctx.fill();
+        ctx.restore()
     }
 
     draw(ctx) {
+        this.drawArrow(ctx, this.startPos, this.endPos)
 
-        // draw axis line
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        if (this.axis_type === "x") {
-            ctx.moveTo(0, ctx.canvas.height / 2);
-            ctx.lineTo(ctx.canvas.width, ctx.canvas.height / 2);
-        } else if (this.axis_type === "y") {
-            ctx.moveTo(ctx.canvas.width / 2, 0);
-            ctx.lineTo(ctx.canvas.width / 2, ctx.canvas.height);
-        }
-        ctx.stroke();
-
-        // draw axis label
     }
 }
 

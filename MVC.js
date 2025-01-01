@@ -67,10 +67,10 @@ class DigitalizerModel {
 
   /**
    * Add a data point to the model
-   * @param {Vector2} pos
    * @param {string} label Label for datapoint
+   * @param {Vector2} pos
    */
-  addDataPoint(pos, label) {
+  addDataPoint(label, pos) {
     if (!this.dataPoints[label]) {
       this.dataPoints[label] = []
     }
@@ -350,7 +350,7 @@ class DigitizerController {
       alert("Please set label before adding points")
       throw new Error("Label required")
     }
-    this.model.addDataPoint(new Vector2(x, y), label);
+    this.model.addDataPoint(label, new Vector2(x, y));
     console.log(`Adding ${label} at (${x}, ${y})`);
   }
 

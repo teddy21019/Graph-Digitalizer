@@ -59,6 +59,8 @@ class AxisMode extends Mode {
     onMouseClick(pos) {
         // set axis starting point
         switch (this.state){
+            case this.stateList.FINISHED:
+                this.state = this.stateList.READY
             case this.stateList.READY:
                 this.axisComponent.setStartPos(pos)
                 this.state = this.stateList.SEEKING
@@ -67,8 +69,6 @@ class AxisMode extends Mode {
                 this.axisComponent.setEndPos(pos)
                 this.state = this.stateList.FINISHED
                 break
-            case this.stateList.FINISHED:
-                this.state = this.stateList.READY
         }
         this.view.updateDraw()
     }

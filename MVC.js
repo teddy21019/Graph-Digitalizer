@@ -185,7 +185,7 @@ class DigitalizerModel {
     const label = dpComp.label
     const pos = dpComp.pos
     let tP = this._projection2Real(pos)
-    return `${tP.x}, ${tP.y}, ${label}`
+    return `${tP.x},${tP.y},${label}`
   }
 
   exportData() {
@@ -202,7 +202,7 @@ class DigitalizerModel {
      */
     // TODO:    Add transformation in component or model?
 
-    let csvContent = "x, y, label \n" + datapointContents.join("\n")
+    let csvContent = "x,y,label \n" + datapointContents.join("\n")
     return csvContent
   }
 }

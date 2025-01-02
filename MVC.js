@@ -248,11 +248,11 @@ class DigitizerView {
    * @returns {string} current label string
    */
   getCurrentLabel() {
-    /** @type {HTMLTextAreaElement} */
-    const labelElement = document.querySelector("#data-label")
+    /** @type {HTMLElement} */
+    const labelElement = document.querySelector("#label-list>.selected")
     // future work: get the element with class "current-label"
     // user click to change label
-    let label = labelElement ? labelElement.value.trim() : ""
+    let label = labelElement ? labelElement.textContent.trim() : ""
     return label
   }
 }

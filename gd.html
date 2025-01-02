@@ -12,44 +12,54 @@
 </head>
 <body>
 
-<h1>Graph Digitizer Tool</h1>
+<body>
 
-<div id="toolbar">
-  <label>
-    Upload Image: <input type="file" id="upload-image" accept="image/*">
-  </label>
-  <button id="set-x-axis">Set X Axis</button>
-  <button id="set-y-axis">Set Y Axis</button>
-  <span>Rotation</span>
-  <input type="range" min="-180" max="180" value="0" class="slider" id="rotation-slider">
-  <span>Zoom</span>
-  <input type="range" min="1" max="300" value="100" class="slider" id="zoom-slider">
-  <label>
-    Label: <input type="text" id="data-label" placeholder="Enter label">
-  </label>
-  <button id="add-point">Add Data Points</button>
-  <button id="delete-point">Delete Points</button>
-  <button id="export-data">Export Data</button>
-  <button id="grid-toggle">Toggle Grid</button>
-</div>
+  <div id="toolbar">
+    <div>
+      <h3>Graph Digitizer Tool</h3>
+    </div>
+    <label>
+      Upload Image: <input type="file" id="upload-image" accept="image/*">
+    </label>
 
-<div id="scale-inputs" class="hidden">
-  <label>
-    Enter X-Axis Values:
-    <input type="number" id="x-axis-value-1">
-    <input type="number" id="x-axis-value-2">
-  </label>
-  <label>
-    Enter Y-Axis Value:
-      <input type="number" id="y-axis-value-1">
-      <input type="number" id="y-axis-value-2">
-  </label>
-</div>
+    <div class="row">
+      <button id="set-x-axis">Set X Axis</button>
+      <input type="number" id="x-axis-value-1" placeholder="X1">
+      <input type="number" id="x-axis-value-2" placeholder="X2">
+    </div>
 
-<div id="canvas-container">
-  <canvas id="digitizer-canvas" width="800" height="600"></canvas>
-</div>
+    <div class="row">
+      <button id="set-y-axis">Set Y Axis</button>
+      <input type="number" id="y-axis-value-1" placeholder="Y1">
+      <input type="number" id="y-axis-value-2" placeholder="Y2">
+    </div>
+    <button id="grid-toggle">Toggle Grid</button>
 
+    <span>Zoom</span>
+    <input type="range" min="1" max="300" value="100" class="slider" id="zoom-slider">
+
+    <span>Rotation</span>
+    <input type="range" min="-180" max="180" value="0" class="slider" id="rotation-slider">
+
+    <div class="row">
+      <button id="add-point">Add Data Points</button>
+      <button id="delete-point">Delete Points</button>
+    </div>
+
+    <div class="label-section">
+      <label>
+        Label Text: <input type="text" id="data-label" placeholder="Enter label">
+      </label>
+      <button id="add-label">Add Label</button>
+      <div id="label-list"></div>
+    </div>
+
+    <button id="export-data">Export Data</button>
+  </div>
+
+  <div id="canvas-container">
+    <canvas id="digitizer-canvas" width="1000" height="600"></canvas>
+  </div>
 
 </body>
 </html>

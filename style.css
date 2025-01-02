@@ -22,10 +22,14 @@ body {
 
   #toolbar label, #toolbar button, #toolbar input, #toolbar span{
     gap: 10px;
+    height: 30px;
   }
 
   #toolbar>*{
     margin:2px;
+  }
+  #toolbar>label{
+    margin-bottom: 20px;
   }
 
   #toolbar .label-section {
@@ -36,6 +40,15 @@ body {
     display: flex;
     width: 100%;
     /* gap: 10px; */
+  }
+
+  #toolbar .stretch {
+    align-items: flex-start;
+    justify-content: space-evenly;
+    flex-wrap: nowrap;
+  }
+  #toolbar .stretch>*{
+    width: 50%;
   }
 
   #toolbar .row>input{

@@ -371,9 +371,16 @@ class DigitizerController {
     /**
      * @type {GridComponent}
      */
-    let grid_comp = this.model._components['grid']
+    let grid_comp = this.model.components['grid']
     let visibility = grid_comp.visible
     grid_comp.setVisible(!visibility)
+    this.view.updateDraw()
+  }
+
+  toggleImage(){
+    let img_comp = this.model.components['image']
+    let visibility = img_comp.visible
+    img_comp.setVisible(!visibility)
     this.view.updateDraw()
   }
 

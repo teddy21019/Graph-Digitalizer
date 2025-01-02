@@ -109,8 +109,24 @@ document.getElementById('upload-image').addEventListener('change', (event) => {
   }
 });
 
+window.addEventListener("paste", (event)=>{
+    if (!document.getElementById("canvas-container").matches(":hover")){
+        return
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    let file = event.clipboardData.items[0].getAsFile();
+    if (file){
+      controller.handleImageUpload(file)
+    }
+})
+
 document.getElementById('grid-toggle').addEventListener('click', () => {
   controller.toggleGrid()
+});
+
+document.getElementById('image-toggle').addEventListener('click', () => {
+  controller.toggleImage()
 });
 
 document.getElementById('export-data').addEventListener('click', exportData);

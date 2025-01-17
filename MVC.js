@@ -17,7 +17,6 @@ class DigitalizerModel {
      */
     this._components = {
       "image": new ImageComponent(null),
-      "origin": new OriginComponent(new Vector2(0, 0)),
       "grid": new GridComponent(20),
       'xAxis': new AxisComponent('x', null, null),
       'yAxis': new AxisComponent('y', null, null),

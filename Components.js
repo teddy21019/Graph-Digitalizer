@@ -64,9 +64,11 @@ class GridComponent extends Component {
      *
      * @param {number} step Step to render for grid
      */
-    constructor(step = 20) {
+    constructor(step = 20, theta_x = 0, theta_y = 90) {
         super()
         this.step = step
+        this.theta_x = theta_x * Math.PI * 2 / 180
+        this.theta_y = theta_y * Math.PI * 2 / 180
     }
 
     /**
@@ -76,12 +78,15 @@ class GridComponent extends Component {
     draw(ctx) {
         ctx.strokeStyle = 'rgba(0,0,0,0.3)';
         const step = this.step;
+
+        // draw y grid
         for (let x = 0; x < ctx.canvas.width; x += step) {
             ctx.beginPath();
             ctx.moveTo(x, 0);
             ctx.lineTo(x, ctx.canvas.height);
             ctx.stroke();
         }
+        //draw x grid
         for (let y = 0; y < ctx.canvas.height; y += step) {
             ctx.beginPath();
             ctx.moveTo(0, y);
